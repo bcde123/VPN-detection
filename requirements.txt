@@ -7,3 +7,7 @@ seaborn
 scikit-learn
 xgboost
 nfstream
+
+# CrewAI Integration (optional)
+crewai
+crewai-tools

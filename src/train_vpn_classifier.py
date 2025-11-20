@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+"""
+VPN Traffic Classifier
+Trains supervised and unsupervised ML models for VPN detection and anomaly identification.
+"""
+
 import pandas as pd
 import numpy as np
 import joblib

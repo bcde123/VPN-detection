@@ -1,4 +1,9 @@
-# src/temporal_agent.py
+#!/usr/bin/env python3
+"""
+Temporal Pattern Analyzer
+Analyzes timing patterns, inter-arrival times, and burst behavior in network traffic.
+"""
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -6,6 +11,7 @@ import seaborn as sns
 import argparse
 from pathlib import Path
 from scipy.stats import entropy
+
 
 def temporal_analysis(csv_path, out_dir):
     Path(out_dir).mkdir(parents=True, exist_ok=True)

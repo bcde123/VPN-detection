@@ -1,18 +1,22 @@
-# : Deep Packet Inspection (DPI) Agents for Encrypted Traffic
+# Deep Packet Inspection (DPI) for VPN Detection
 
 This project provides a **modular pipeline** for analyzing network traffic data, performing both **supervised** and **unsupervised** machine learning analysis to detect VPN and non-VPN traffic.  
-The system automates the **data preprocessing → feature extraction → model training** workflow with a single command.
+The system automates the **PCAP processing → data preprocessing → feature extraction → model training** workflow with a single command.
+
+## Quick Start
 
 ### **1️⃣ Setup Virtual Environment**
 
 ```bash
-python -m venv venv
+# Create virtual environment
+python3 -m venv venv
 
+# Activate (Windows)
 .\venv\Scripts\Activate.ps1
 
-# macos
+# Activate (macOS/Linux)
 source venv/bin/activate
-````
+```
 
 ### **2️⃣ Install Dependencies**
 
@@ -20,13 +24,25 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### **3️⃣ Run the Complete Pipeline**
+### **3️⃣ Prepare Data**
+
+Place your PCAP files in the following directories:
+- `data/NonVPN-PCAPs-01/` - Non-VPN traffic captures
+- `data/VPN-PCAPS-01/` - VPN traffic captures
+
+Or place pre-processed CSV files in `data/` directory.
+
+### **4️⃣ Run the Complete Pipeline**
 
 ```bash
-python3 ./run_pipeline.py
+python run_pipeline.py
 ```
 
-The script will automatically process your input data, extract features, and train both supervised and unsupervised models.
+The script will automatically:
+1. Convert PCAP files to CSV flows (if needed)
+2. Preprocess the data
+3. Extract multi-dimensional features
+4. Train both supervised and unsupervised models
 
 
 ## 📁 Folder Structure
@@ -47,18 +63,18 @@ project_root/
 │   └── models/                    # Trained models stored here
 │
 ├── src/
-│   ├── preprocess_kaggle_traffic.py
-│   ├── flow_analyzer.py
-│   ├── temporal_agent.py
-│   ├── size_agent.py
-│   ├── tls_analysis.py
-│   ├── reputation_analysis.py
-│   ├── feature_engineering.py
-│   ├── train_vpn_classifier.py
-│   
+│   ├── pcap_to_csv.py              # Converts PCAP files to CSV flows
+│   ├── preprocess_kaggle_traffic.py # Cleans and normalizes data
+│   ├── flow_analyzer.py             # Flow-level statistics
+│   ├── temporal_agent.py            # Temporal pattern analysis
+│   ├── size_agent.py                # Packet size distribution
+│   ├── tls_analysis.py              # TLS/SSL fingerprinting
+│   ├── reputation_analysis.py       # IP reputation checking
+│   ├── feature_engineering.py       # Feature aggregation
+│   └── train_vpn_classifier.py      # Model training
 │
-└── requirements.txt
-└── run_pipeline.py            # Main orchestrator script
+├── requirements.txt
+└── run_pipeline.py                  # Main orchestrator script
 ```
 
 
@@ -66,15 +82,16 @@ project_root/
 
 | **Step** | **Script**                     | **Description**                                                                   |
 | -------- | ------------------------------ | --------------------------------------------------------------------------------- |
-| 1️⃣      | `preprocess_kaggle_traffic.py` | Cleans and normalizes raw flow data (CSV).                                        |
-| 2️⃣      | `flow_analyzer.py`             | Analyzes flow-level statistics and stores summary JSON.                           |
-| 3️⃣      | `temporal_agent.py`            | Extracts temporal behavior patterns (e.g., packet timing).                        |
-| 4️⃣      | `size_agent.py`                | Analyzes packet size distributions and traffic volume.                            |
-| 5️⃣      | `tls_analysis.py`              | Extracts SSL/TLS handshake and certificate features.                              |
-| 6️⃣      | `reputation_analysis.py`       | Assesses IP/domain reputation from known threat lists.                            |
-| 7️⃣      | `feature_engineering.py`       | Merges all extracted features into a single ML-ready CSV.                         |
-| 8️⃣      | `train_vpn_classifier.py`      | Trains two models: supervised (VPN detection) & unsupervised (anomaly detection). |
-| 9️⃣      | `run_pipeline.py`              | Automatically runs all the above steps in order.                                  |
+| 1️⃣      | `pcap_to_csv.py`               | Converts raw PCAP files to CSV flow records using nfstream.                       |
+| 2️⃣      | `preprocess_kaggle_traffic.py` | Cleans and normalizes flow data (CSV).                                            |
+| 3️⃣      | `flow_analyzer.py`             | Analyzes flow-level statistics and stores summary JSON.                           |
+| 4️⃣      | `reputation_analysis.py`       | Assesses IP/domain reputation from known threat lists.                            |
+| 5️⃣      | `temporal_agent.py`            | Extracts temporal behavior patterns (e.g., packet timing, bursts).                |
+| 6️⃣      | `size_agent.py`                | Analyzes packet size distributions and traffic volume.                            |
+| 7️⃣      | `tls_analysis.py`              | Extracts SSL/TLS handshake and certificate features.                              |
+| 8️⃣      | `feature_engineering.py`       | Merges all extracted features into a single ML-ready CSV.                         |
+| 9️⃣      | `train_vpn_classifier.py`      | Trains models: supervised (VPN detection) & unsupervised (anomaly detection).     |
+| 🚀      | `run_pipeline.py`              | Automatically executes all the above steps in sequence.                           |
 
 
 ## Machine Learning Models
@@ -105,17 +122,41 @@ Trained models and evaluation metrics are saved in `results/models/`.
 
 ---
 
-## Example Command Sequence (for manual debugging)
+## Manual Execution (for debugging individual steps)
 
 ```bash
-python src/preprocess_kaggle_traffic.py --input data/sample_flows.csv --output data/processed_flows.csv
-python src/flow_analyzer.py --csv data/processed_flows.csv --out-json results/flow_analyzer/summary.json
-python src/temporal_agent.py --csv data/processed_flows.csv --out-dir results/temporal_agent
-python src/size_agent.py --csv data/processed_flows.csv --out-dir results/size_agent
-python src/tls_analysis.py --csv data/processed_flows.csv --out-dir results/tls_analysis
-python src/reputation_analysis.py --csv data/processed_flows.csv --out-json results/reputation_analysis/report.json
-python src/feature_engineering.py --flows data/processed_flows.csv --temporal results/temporal_agent/temporal_summary.json --size results/size_agent/size_analysis.json --tls results/tls_analysis/tls_summary.json --reputation results/reputation_analysis/report.json --out results/ml_ready/flows_ml_ready.csv
-python src/train_vpn_classifier.py --csv results/ml_ready/flows_ml_ready.csv
+# Step 1: Convert PCAP to CSV
+python src/pcap_to_csv.py
+
+# Step 2: Preprocess
+python src/preprocess_kaggle_traffic.py --input data/combined_flows.csv --output data/processed_flows_1.csv
+
+# Step 3: Flow Analysis
+python src/flow_analyzer.py --csv data/processed_flows_1.csv --out-json results/flow_analyzer/summary.json
+
+# Step 4: Reputation Analysis
+python src/reputation_analysis.py --csv data/processed_flows_1.csv --out-json results/reputation_analysis/report.json
+
+# Step 5: Temporal Analysis
+python src/temporal_agent.py --csv data/processed_flows_1.csv --out-dir results/temporal_agent
+
+# Step 6: Size Analysis
+python src/size_agent.py --csv data/processed_flows_1.csv --out-dir results/size_agent
+
+# Step 7: TLS Analysis
+python src/tls_analysis.py --csv data/processed_flows_1.csv --out-dir results/tls_analysis
+
+# Step 8: Feature Engineering
+python src/feature_engineering.py \
+  --flows data/processed_flows_1.csv \
+  --temporal results/temporal_agent/temporal_summary.json \
+  --size results/size_agent/size_analysis.json \
+  --tls results/tls_analysis/tls_summary.json \
+  --reputation results/reputation_analysis/report.json \
+  --out results/ml_ready/flows_ml_ready.csv
+
+# Step 9: Train Models
+python src/train_vpn_classifier.py --data results/ml_ready/flows_ml_ready.csv
 ```
 
 ---

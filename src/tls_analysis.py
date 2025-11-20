@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+"""
+TLS/SSL Analyzer
+Extracts and analyzes TLS handshake patterns and certificate fingerprints.
+"""
+
 import pandas as pd
 import os
 import hashlib

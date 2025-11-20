@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+"""
+IP Reputation Analyzer
+Assesses IP and domain reputation against threat intelligence feeds.
+"""
+
 import pandas as pd
 import json
 import os

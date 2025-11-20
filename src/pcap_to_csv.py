@@ -1,8 +1,25 @@
+#!/usr/bin/env python3
+"""
+PCAP to CSV Converter
+Processes PCAP files and converts them to CSV flow records using nfstream.
+"""
+
 import pandas as pd
 import os
 from nfstream import NFStreamer
 
+
 def process_pcap_folder(folder_path, label):
+    """
+    Process all PCAP files in a folder and extract network flows.
+    
+    Args:
+        folder_path (str): Path to folder containing PCAP files
+        label (str): Label to assign to flows (VPN or Non-VPN)
+    
+    Returns:
+        pd.DataFrame: DataFrame containing extracted flows
+    """
     flows = []
     if not os.path.exists(folder_path):
         print(f"Warning: Folder {folder_path} does not exist.")
@@ -33,6 +50,7 @@ def process_pcap_folder(folder_path, label):
     return pd.DataFrame(flows)
 
 def main():
+    """Main execution function."""
     vpn_path = "data/VPN-PCAPS-01"
     non_vpn_path = "data/NonVPN-PCAPs-01"
     output_csv = "data/combined_flows.csv"

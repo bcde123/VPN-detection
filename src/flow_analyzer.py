@@ -1,10 +1,24 @@
+#!/usr/bin/env python3
+"""
+Flow Analyzer
+Analyzes network flow statistics and generates summary reports.
+"""
+
 import pandas as pd
 import argparse
 import json
 from pathlib import Path
 import numpy as np
 
+
 def analyze_flows(csv_path, out_json):
+    """
+    Analyze network flows and generate statistics.
+    
+    Args:
+        csv_path (str): Path to CSV file containing flow data
+        out_json (str): Output path for JSON summary report
+    """
     df = pd.read_csv(csv_path)
 
     print(f"Loaded {len(df)} flows from {csv_path}")

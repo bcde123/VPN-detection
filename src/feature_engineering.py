@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+"""
+Feature Engineering Module
+Aggregates multi-dimensional features from all analysis modules into ML-ready dataset.
+"""
+
 import pandas as pd
 import os
 import numpy as np

@@ -1,4 +1,9 @@
-# src/size_agent.py
+#!/usr/bin/env python3
+"""
+Packet Size Analyzer
+Analyzes packet size distributions and traffic volume patterns.
+"""
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -6,6 +11,7 @@ import seaborn as sns
 import argparse
 import json
 from pathlib import Path
+
 
 def size_distribution_analysis(csv_path, out_dir):
     Path(out_dir).mkdir(parents=True, exist_ok=True)
