@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-"""
-CrewAI Agent Integration
-Orchestrates VPN detection pipeline using CrewAI agents with multiple LLM options.
-"""
-
 import os
 import subprocess
 from typing import Type
@@ -11,19 +5,7 @@ from crewai import Agent, Task, Crew, Process
 from crewai.tools import BaseTool
 from pydantic import BaseModel, Field
 
-
-# ============================================================================
-# LLM CONFIGURATION
-# ============================================================================
-
 def get_llm():
-    """
-    Configure LLM based on available API keys or local setup.
-    Priority: Ollama (free/local) > OpenAI > Gemini
-    """
-    # Option 1: Use Ollama (recommended - free and local)
-    # Install: https://ollama.ai
-    # Run: ollama pull llama3.2:1b
     try:
         import subprocess
         result = subprocess.run(["ollama", "list"], capture_output=True, text=True)
@@ -32,15 +14,12 @@ def get_llm():
     except:
         pass
     
-    # Option 2: OpenAI (requires API key with credits)
     if os.getenv("OPENAI_API_KEY"):
         return "gpt-4o-mini"
     
-    # Option 3: Gemini (requires API key)
     if os.getenv("GOOGLE_API_KEY"):
         return "gemini/gemini-1.5-flash"
     
-    # Fallback: Provide instructions
     raise ValueError(
         "No LLM configured. Please choose one:\n"
         "1. Install Ollama (FREE): https://ollama.ai then run 'ollama pull llama3.2:1b'\n"
@@ -48,18 +27,11 @@ def get_llm():
         "3. Set GOOGLE_API_KEY environment variable"
     )
 
-
-# ============================================================================
-# TOOL DEFINITIONS
-# ============================================================================
-
 class CaptureToolInput(BaseModel):
-    """Input schema for PCAP capture tool."""
     input_path: str = Field(default="data/", description="Path to PCAP files directory")
 
 
 class CaptureTool(BaseTool):
-    """Converts PCAP files to CSV flow records."""
     name: str = "Capture and Preprocess Flows"
     description: str = (
         "Captures network traffic from PCAP files, converts them to CSV using nfstream, "
@@ -68,14 +40,10 @@ class CaptureTool(BaseTool):
     args_schema: Type[BaseModel] = CaptureToolInput
     
     def _run(self, input_path: str = "data/") -> str:
-        """Execute PCAP to CSV conversion and preprocessing."""
         print(f"\n[Agent 1: Flow Capture] Processing PCAPs from {input_path}...")
         
         try:
-            # Step 1: PCAP to CSV
             subprocess.run("python3 src/pcap_to_csv.py", shell=True, check=True)
-            
-            # Step 2: Preprocess
             subprocess.run(
                 "python3 src/preprocess_kaggle_traffic.py "
                 "--input data/combined_flows.csv "
@@ -89,12 +57,10 @@ class CaptureTool(BaseTool):
 
 
 class FlowAnalysisToolInput(BaseModel):
-    """Input schema for flow analysis tool."""
     csv_path: str = Field(description="Path to CSV file containing flow data")
 
 
 class FlowAnalysisTool(BaseTool):
-    """Analyzes flow-level statistics and IP reputation."""
     name: str = "Analyze Flow Patterns and Reputation"
     description: str = (
         "Analyzes general flow statistics (bytes, packets, ports) and assesses "
@@ -103,11 +69,9 @@ class FlowAnalysisTool(BaseTool):
     args_schema: Type[BaseModel] = FlowAnalysisToolInput
     
     def _run(self, csv_path: str) -> str:
-        """Execute flow pattern and reputation analysis."""
         print(f"\n[Agent 2: Flow Pattern Analyst] Analyzing {csv_path}...")
         
         try:
-            # Flow analyzer
             subprocess.run(
                 f"python3 src/flow_analyzer.py "
                 f"--csv {csv_path} "
@@ -115,7 +79,6 @@ class FlowAnalysisTool(BaseTool):
                 shell=True, check=True
             )
             
-            # Reputation analysis
             subprocess.run(
                 f"python3 src/reputation_analysis.py "
                 f"--csv {csv_path} "
@@ -132,12 +95,10 @@ class FlowAnalysisTool(BaseTool):
 
 
 class TemporalAnalysisToolInput(BaseModel):
-    """Input schema for temporal analysis tool."""
     csv_path: str = Field(description="Path to CSV file containing flow data")
 
 
 class TemporalAnalysisTool(BaseTool):
-    """Analyzes temporal patterns in network traffic."""
     name: str = "Analyze Temporal Patterns"
     description: str = (
         "Analyzes timing patterns including inter-arrival times, burst behavior, "
@@ -146,7 +107,6 @@ class TemporalAnalysisTool(BaseTool):
     args_schema: Type[BaseModel] = TemporalAnalysisToolInput
     
     def _run(self, csv_path: str) -> str:
-        """Execute temporal pattern analysis."""
         print(f"\n[Agent 3: Temporal Analyst] Analyzing timing patterns for {csv_path}...")
         
         try:
@@ -163,12 +123,10 @@ class TemporalAnalysisTool(BaseTool):
 
 
 class SizeAnalysisToolInput(BaseModel):
-    """Input schema for size analysis tool."""
     csv_path: str = Field(description="Path to CSV file containing flow data")
 
 
 class SizeAnalysisTool(BaseTool):
-    """Analyzes packet sizes and TLS fingerprints."""
     name: str = "Analyze Packet Sizes and TLS"
     description: str = (
         "Analyzes packet size distributions, traffic volume patterns, "
@@ -177,11 +135,9 @@ class SizeAnalysisTool(BaseTool):
     args_schema: Type[BaseModel] = SizeAnalysisToolInput
     
     def _run(self, csv_path: str) -> str:
-        """Execute size and TLS analysis."""
         print(f"\n[Agent 4: Size & Payload Analyst] Analyzing packet sizes and TLS for {csv_path}...")
         
         try:
-            # Size distribution analysis
             subprocess.run(
                 f"python3 src/size_agent.py "
                 f"--csv {csv_path} "
@@ -189,7 +145,6 @@ class SizeAnalysisTool(BaseTool):
                 shell=True, check=True
             )
             
-            # TLS analysis
             subprocess.run(
                 f"python3 src/tls_analysis.py "
                 f"--csv {csv_path} "
@@ -206,12 +161,10 @@ class SizeAnalysisTool(BaseTool):
 
 
 class FeatureEngineeringToolInput(BaseModel):
-    """Input schema for feature engineering tool."""
     csv_path: str = Field(description="Path to preprocessed CSV file")
 
 
 class FeatureEngineeringTool(BaseTool):
-    """Aggregates all features into ML-ready dataset."""
     name: str = "Generate ML Features"
     description: str = (
         "Aggregates analysis results from all agents (flow, temporal, size, TLS, reputation) "
@@ -220,7 +173,6 @@ class FeatureEngineeringTool(BaseTool):
     args_schema: Type[BaseModel] = FeatureEngineeringToolInput
     
     def _run(self, csv_path: str) -> str:
-        """Execute feature engineering."""
         print(f"\n[Agent 5: Feature Engineer] Generating ML features from {csv_path}...")
         
         try:
@@ -240,14 +192,8 @@ class FeatureEngineeringTool(BaseTool):
             return f"✗ Error: {str(e)}"
 
 
-# ============================================================================
-# AGENT DEFINITIONS
-# ============================================================================
-
 def create_agents(llm):
-    """Create the 5 specialized agents."""
     
-    # Agent 1: Network Traffic Collector
     flow_capture_agent = Agent(
         role='Network Traffic Collector',
         goal='Capture raw network packets from PCAP files and convert them into structured flow data',
@@ -262,7 +208,6 @@ def create_agents(llm):
         llm=llm
     )
     
-    # Agent 2: Traffic Pattern Analyst
     flow_pattern_agent = Agent(
         role='Traffic Pattern Analyst',
         goal='Identify macro-level traffic patterns and assess IP reputation',
@@ -277,7 +222,6 @@ def create_agents(llm):
         llm=llm
     )
     
-    # Agent 3: Temporal Behavior Analyst
     temporal_agent = Agent(
         role='Temporal Behavior Analyst',
         goal='Analyze the timing and burstiness patterns of network traffic',
@@ -292,7 +236,6 @@ def create_agents(llm):
         llm=llm
     )
     
-    # Agent 4: Payload Analyst
     size_agent = Agent(
         role='Payload Analyst',
         goal='Analyze packet sizes and TLS fingerprints',
@@ -307,7 +250,6 @@ def create_agents(llm):
         llm=llm
     )
     
-    # Agent 5: Feature Engineer
     feature_engineer_agent = Agent(
         role='Feature Engineer',
         goal='Construct a comprehensive feature set for Machine Learning',
@@ -326,12 +268,7 @@ def create_agents(llm):
     return [flow_capture_agent, flow_pattern_agent, temporal_agent, size_agent, feature_engineer_agent]
 
 
-# ============================================================================
-# TASK DEFINITIONS
-# ============================================================================
-
 def create_tasks(agents):
-    """Create tasks for each agent."""
     
     flow_capture_agent, flow_pattern_agent, temporal_agent, size_agent, feature_engineer_agent = agents
     
@@ -392,18 +329,12 @@ def create_tasks(agents):
     return [task_capture, task_pattern, task_temporal, task_size, task_features]
 
 
-# ============================================================================
-# MAIN EXECUTION
-# ============================================================================
-
 def main():
-    """Execute the VPN detection crew."""
     
     print("="*80)
     print("VPN DETECTION CREW - AI-POWERED MULTI-AGENT ANALYSIS")
     print("="*80)
     
-    # Get LLM configuration
     try:
         llm = get_llm()
         print(f"\n✓ LLM configured: {llm}\n")
@@ -411,16 +342,14 @@ def main():
         print(f"\n✗ {str(e)}\n")
         return
     
-    # Create agents and tasks
     agents = create_agents(llm)
     tasks = create_tasks(agents)
     
-    # Create and run crew
     vpn_detection_crew = Crew(
         agents=agents,
         tasks=tasks,
         verbose=True,
-        process=Process.sequential  # Execute tasks in order
+        process=Process.sequential
     )
     
     print("\n" + "="*80)
