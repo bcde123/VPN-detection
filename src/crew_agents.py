@@ -23,9 +23,14 @@ def get_llm():
     """
     # Option 1: Use Ollama (recommended - free and local)
     # Install: https://ollama.ai
-    # Run: ollama pull llama2
-    if os.path.exists("/usr/local/bin/ollama") or os.path.exists("/opt/homebrew/bin/ollama"):
-        return "ollama/llama2"
+    # Run: ollama pull llama3.2:1b
+    try:
+        import subprocess
+        result = subprocess.run(["ollama", "list"], capture_output=True, text=True)
+        if result.returncode == 0:
+            return "ollama/llama3.2:1b"
+    except:
+        pass
     
     # Option 2: OpenAI (requires API key with credits)
     if os.getenv("OPENAI_API_KEY"):
@@ -38,7 +43,7 @@ def get_llm():
     # Fallback: Provide instructions
     raise ValueError(
         "No LLM configured. Please choose one:\n"
-        "1. Install Ollama (FREE): https://ollama.ai then run 'ollama pull llama2'\n"
+        "1. Install Ollama (FREE): https://ollama.ai then run 'ollama pull llama3.2:1b'\n"
         "2. Set OPENAI_API_KEY environment variable\n"
         "3. Set GOOGLE_API_KEY environment variable"
     )
@@ -68,11 +73,11 @@ class CaptureTool(BaseTool):
         
         try:
             # Step 1: PCAP to CSV
-            subprocess.run("python src/pcap_to_csv.py", shell=True, check=True)
+            subprocess.run("python3 src/pcap_to_csv.py", shell=True, check=True)
             
             # Step 2: Preprocess
             subprocess.run(
-                "python src/preprocess_kaggle_traffic.py "
+                "python3 src/preprocess_kaggle_traffic.py "
                 "--input data/combined_flows.csv "
                 "--output data/processed_flows_1.csv",
                 shell=True, check=True
@@ -104,7 +109,7 @@ class FlowAnalysisTool(BaseTool):
         try:
             # Flow analyzer
             subprocess.run(
-                f"python src/flow_analyzer.py "
+                f"python3 src/flow_analyzer.py "
                 f"--csv {csv_path} "
                 f"--out-json results/flow_analyzer/summary.json",
                 shell=True, check=True
@@ -112,7 +117,7 @@ class FlowAnalysisTool(BaseTool):
             
             # Reputation analysis
             subprocess.run(
-                f"python src/reputation_analysis.py "
+                f"python3 src/reputation_analysis.py "
                 f"--csv {csv_path} "
                 f"--out-json results/reputation_analysis/report.json",
                 shell=True, check=True
@@ -146,7 +151,7 @@ class TemporalAnalysisTool(BaseTool):
         
         try:
             subprocess.run(
-                f"python src/temporal_agent.py "
+                f"python3 src/temporal_agent.py "
                 f"--csv {csv_path} "
                 f"--out-dir results/temporal_agent",
                 shell=True, check=True
@@ -178,7 +183,7 @@ class SizeAnalysisTool(BaseTool):
         try:
             # Size distribution analysis
             subprocess.run(
-                f"python src/size_agent.py "
+                f"python3 src/size_agent.py "
                 f"--csv {csv_path} "
                 f"--out-dir results/size_agent",
                 shell=True, check=True
@@ -186,7 +191,7 @@ class SizeAnalysisTool(BaseTool):
             
             # TLS analysis
             subprocess.run(
-                f"python src/tls_analysis.py "
+                f"python3 src/tls_analysis.py "
                 f"--csv {csv_path} "
                 f"--out-dir results/tls_analysis",
                 shell=True, check=True
@@ -220,7 +225,7 @@ class FeatureEngineeringTool(BaseTool):
         
         try:
             subprocess.run(
-                f"python src/feature_engineering.py "
+                f"python3 src/feature_engineering.py "
                 f"--flows {csv_path} "
                 f"--temporal results/temporal_agent/temporal_summary.json "
                 f"--size results/size_agent/size_analysis.json "

@@ -33,28 +33,28 @@ def main():
     
     steps = [
         ("1. Convert PCAP files to CSV",
-         "python src/pcap_to_csv.py"),
+         "python3 src/pcap_to_csv.py"),
         
         ("2. Preprocess flows",
-         "python src/preprocess_kaggle_traffic.py --input data/combined_flows.csv --output data/processed_flows_1.csv"),
+         "python3 src/preprocess_kaggle_traffic.py --input data/combined_flows.csv --output data/processed_flows_1.csv"),
         
         ("3. Analyze flow patterns",
-         "python src/flow_analyzer.py --csv data/processed_flows_1.csv --out-json results/flow_analyzer/summary.json"),
+         "python3 src/flow_analyzer.py --csv data/processed_flows_1.csv --out-json results/flow_analyzer/summary.json"),
         
         ("4. Analyze IP reputation",
-         "python src/reputation_analysis.py --csv data/processed_flows_1.csv --out-json results/reputation_analysis/report.json"),
+         "python3 src/reputation_analysis.py --csv data/processed_flows_1.csv --out-json results/reputation_analysis/report.json"),
         
         ("5. Analyze temporal patterns",
-         "python src/temporal_agent.py --csv data/processed_flows_1.csv --out-dir results/temporal_agent"),
+         "python3 src/temporal_agent.py --csv data/processed_flows_1.csv --out-dir results/temporal_agent"),
         
         ("6. Analyze packet sizes",
-         "python src/size_agent.py --csv data/processed_flows_1.csv --out-dir results/size_agent"),
+         "python3 src/size_agent.py --csv data/processed_flows_1.csv --out-dir results/size_agent"),
         
         ("7. Analyze TLS fingerprints",
-         "python src/tls_analysis.py --csv data/processed_flows_1.csv --out-dir results/tls_analysis"),
+         "python3 src/tls_analysis.py --csv data/processed_flows_1.csv --out-dir results/tls_analysis"),
         
         ("8. Generate ML-ready features",
-         """python src/feature_engineering.py \
+         """python3 src/feature_engineering.py \
 --flows data/processed_flows_1.csv \
 --temporal results/temporal_agent/temporal_summary.json \
 --size results/size_agent/size_analysis.json \
@@ -85,7 +85,7 @@ def main():
     print("\n📊 Final Output:")
     print("   results/ml_ready/flows_ml_ready.csv")
     print("\n💡 Next Step:")
-    print("   python src/train_vpn_classifier.py --data results/ml_ready/flows_ml_ready.csv")
+    print("   python3 src/train_vpn_classifier.py --data results/ml_ready/flows_ml_ready.csv")
 
 if __name__ == "__main__":
     main()

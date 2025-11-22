@@ -126,28 +126,28 @@ Trained models and evaluation metrics are saved in `results/models/`.
 
 ```bash
 # Step 1: Convert PCAP to CSV
-python src/pcap_to_csv.py
+python3 src/pcap_to_csv.py
 
 # Step 2: Preprocess
-python src/preprocess_kaggle_traffic.py --input data/combined_flows.csv --output data/processed_flows_1.csv
+python3 src/preprocess_kaggle_traffic.py --input data/combined_flows.csv --output data/processed_flows_1.csv
 
 # Step 3: Flow Analysis
-python src/flow_analyzer.py --csv data/processed_flows_1.csv --out-json results/flow_analyzer/summary.json
+python3 src/flow_analyzer.py --csv data/processed_flows_1.csv --out-json results/flow_analyzer/summary.json
 
 # Step 4: Reputation Analysis
-python src/reputation_analysis.py --csv data/processed_flows_1.csv --out-json results/reputation_analysis/report.json
+python3 src/reputation_analysis.py --csv data/processed_flows_1.csv --out-json results/reputation_analysis/report.json
 
 # Step 5: Temporal Analysis
-python src/temporal_agent.py --csv data/processed_flows_1.csv --out-dir results/temporal_agent
+python3 src/temporal_agent.py --csv data/processed_flows_1.csv --out-dir results/temporal_agent
 
 # Step 6: Size Analysis
-python src/size_agent.py --csv data/processed_flows_1.csv --out-dir results/size_agent
+python3 src/size_agent.py --csv data/processed_flows_1.csv --out-dir results/size_agent
 
 # Step 7: TLS Analysis
-python src/tls_analysis.py --csv data/processed_flows_1.csv --out-dir results/tls_analysis
+python3 src/tls_analysis.py --csv data/processed_flows_1.csv --out-dir results/tls_analysis
 
 # Step 8: Feature Engineering
-python src/feature_engineering.py \
+python3 src/feature_engineering.py \
   --flows data/processed_flows_1.csv \
   --temporal results/temporal_agent/temporal_summary.json \
   --size results/size_agent/size_analysis.json \
@@ -156,7 +156,7 @@ python src/feature_engineering.py \
   --out results/ml_ready/flows_ml_ready.csv
 
 # Step 9: Train Models
-python src/train_vpn_classifier.py --data results/ml_ready/flows_ml_ready.csv
+python3 src/train_vpn_classifier.py --csv results/ml_ready/flows_ml_ready.csv
 ```
 
 ---
